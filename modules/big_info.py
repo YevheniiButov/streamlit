@@ -2,7 +2,6 @@
 
 import streamlit as st
 
-# Словарь с переводами для всех 8 языков
 texts = {
     "en": {
         "title": "📄 BIG Registration Information",
@@ -135,14 +134,10 @@ Como dentista formado no estrangeiro nos Países Baixos, deve registar-se no reg
 }
 
 def render(lang="nl"):
-    # Получаем словарь с текстами для выбранного языка (или nl по умолчанию)
     t = texts.get(lang, texts["nl"])
 
-    # Используем переведенный заголовок
     st.title(t["title"])
 
-    # Используем переведенный markdown-текст
     st.markdown(t["markdown_content"])
 
-    # Используем переведенный текст для ссылки
     st.success(t["link_text"])

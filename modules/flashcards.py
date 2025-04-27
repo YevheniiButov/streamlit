@@ -2,10 +2,7 @@
 
 import streamlit as st
 import random
-# from utils.progress import add_score # Removed: No persistent progress
 
-# --- Word Data ---
-# Dictionary mapping Dutch words to English translation
 words = {
     "tandarts": "dentist",
     "wortelkanaal": "root canal",
@@ -13,13 +10,11 @@ words = {
     "tandvlees": "gum",
     "röntgenfoto": "X-ray",
     "verdoving": "anesthesia",
-    "vulling": "filling", # Added example
-    "extractie": "extraction" # Added example
+    "vulling": "filling",
+    "extractie": "extraction"
 }
-# Convert keys to a list for indexing
 word_keys = list(words.keys())
 
-# --- Translations for UI elements ---
 texts = {
     "en": {
         "title": "🧠 Flashcards for Dentists",
@@ -48,44 +43,59 @@ texts = {
     # TODO: Add other languages uk, es, pt, tr, fa
 }
 
-# --- Function to display the module ---
 def render(lang="en"):
-    # Get translations for the current language
-    t = texts.get(lang, texts["en"]) # Default to English
+    t = texts.get(lang, texts["en"])
 
     st.title(t["title"])
 
-    # --- State Initialization ---
     if "flashcard_word_key" not in st.session_state:
-        # Select a random starting word key
-        st.session_state.flashcard_word_key = random.choice(word_keys)
+        if word_keys: # Ensure word_keys is not empty before choosing
+             st.session_state.flashcard_word_key = random.choice(word_keys)
+        else:
+             st.session_state.flashcard_word_key = None
+
     if "show_translation_flashcard" not in st.session_state:
-        # Track if the translation should be shown
         st.session_state.show_translation_flashcard = False
 
-    # --- Display Current Flashcard ---
+    # Handle case where words dictionary might be empty initially
+    if st.session_state.flashcard_word_key is None and not word_keys:
+        # Provide translations for the warning message
+        warning_texts = {
+            "en": "No words available for flashcards.",
+            "ru": "Нет слов для карточек.",
+            "nl": "Geen woorden beschikbaar voor flashcards.",
+            "uk": "Немає слів для карток.",
+            "es": "No hay palabras disponibles para las tarjetas.",
+            "tr": "Bilgi kartları için kelime mevcut değil.",
+            "fa": "کلمه ای برای فلش کارت موجود نیست.",
+            "pt": "Nenhuma palavra disponível para flashcards."
+        }
+        st.warning(warning_texts.get(lang, warning_texts["en"]))
+        return # Exit the function if no words
+
     current_key = st.session_state.flashcard_word_key
-    english_translation = words.get(current_key, "Translation not found")
+    # Ensure current_key is not None before accessing words dict
+    if current_key:
+        english_translation = words.get(current_key, "Translation not found")
+    else:
+        # Fallback if something went wrong with state initialization
+        st.error("Error: Could not load a word.")
+        return
 
     st.write(t["what_means"])
-    st.header(f"📘 {current_key}") # Display the Dutch word
+    st.header(f"📘 {current_key}")
 
-    # --- Show/Hide Translation Toggle ---
-    # The toggle directly controls the session state variable
     st.session_state.show_translation_flashcard = st.toggle(
         t["show_translation"] if not st.session_state.show_translation_flashcard else t["hide_translation"],
-        key="show_translation_flashcard_toggle" # Unique key for this toggle
+        key="show_translation_flashcard_toggle"
     )
 
-    # Conditionally display the translation
     if st.session_state.show_translation_flashcard:
         st.success(f"{t['translation_label']} {english_translation}")
 
-    st.markdown("---") # Separator
+    st.divider() # Use st.divider() instead of st.markdown("---")
 
-    # --- Next Card Button ---
     if st.button(t["next_button"]):
-        # Pick a new random key, different from the current one
         if len(word_keys) > 1:
             new_key = current_key
             while new_key == current_key:
@@ -93,12 +103,8 @@ def render(lang="en"):
             st.session_state.flashcard_word_key = new_key
         elif len(word_keys) == 1:
              st.session_state.flashcard_word_key = word_keys[0]
-        else: # Handle empty words dictionary
+        else:
              st.session_state.flashcard_word_key = None
 
-        st.session_state.show_translation_flashcard = False # Reset translation visibility
-        st.rerun() # Rerun script to display the new card
-
-    # Handle case where words dictionary might be empty
-    if st.session_state.flashcard_word_key is None and len(word_keys) == 0:
-        st.warning("No words available for flashcards.")
+        st.session_state.show_translation_flashcard = False
+        st.rerun()

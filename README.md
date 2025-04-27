@@ -25,5 +25,5 @@ An online platform to help foreign-trained dentists prepare for BIG-registration
 ## 🚀 Getting Started
 
 ```bash
-uvicorn main:app --reload   # если ты используешь FastAPI в Flask части
-streamlit run sapp.py       # запуск Streamlit-приложения
+uvicorn main:app --reload   
+streamlit run sapp.py       
